@@ -1,107 +1,123 @@
-# AI/SW 개발 워크스테이션 구축 리포트
+# AI/SW 개발 워크스테이션 구축 리포트 및 수행 일지
 
-본 프로젝트는 비개발자 환경에서 가장 이상적인 개발 환경을 구성하기 위해 Linux 터미널, Docker 엔진, Git 협업 툴의 핵심 원리를 이해하고 직접 재현 가능한 인프라를 구축한 기술 문서입니다.
-
----
-
-## 1. 실행 환경 및 아키텍처 설계
-*   **OS**: macOS (Apple Silicon)
-*   **Shell**: `zsh`
-*   **Git**: Apple Git-154 (2.39.5)
-*   **Docker**: Docker version 28.5.2 (OrbStack 엔진)
-
-**[디렉토리 구조 설계 기준]**
-"환경의 격리와 역할의 분리"를 원칙으로 폴더를 구성했습니다. 정적 웹 사이트의 소스코드(Static Assets)를 담당하는 `app/` 디렉토리와 내부 설정 문서들을 `01` 패키지 안에 논리적으로 격리했으며, 프로젝트 최상단에는 인프라 설계도인 `Dockerfile`과 통합 가이드인 `README.md`를 배치하여 버전 관리가 명확해지도록 구조화했습니다.
+본 문서는 Linux 서버 기초부터 Docker 인프라 생명주기 관리, Git 형상 관리까지 **진행된 모든 실습 과정의 명령어 스크립트와 실행 결과값**을 A to Z로 상세히 기록한 무결성 증빙 문서입니다.
 
 ---
 
-## 2. 터미널 제어 및 리눅스 시스템 기초 (Linux CLI)
+## [Phase 1] Linux 터미널 디렉토리 제어 및 권한 체계 실습
 
-### 2.1 절대 경로와 상대 경로의 활용
-CLI 환경에서 목표 디렉토리로 이동하거나 명령을 수행할 때 두 가지 경로 표기법을 목적에 맞게 혼용했습니다.
-*   **상대 경로 (`./` 또는 `../`)**: 현재 워킹 디렉토리 내에서 코드 모듈을 참조하거나 근거리 폴더로 빠르게 접근할 때 활용합니다.
-*   **절대 경로 (`/Users/hwang/...`)**: 루트 경로(`/`)부터 시작하는 변하지 않는 주소로써, 컨테이너 볼륨과 호스트를 바인딩(`-v`)할 때 경로 이탈에 의한 마운트 실패를 원천 차단하기 위해 사용합니다.
-
-### 2.2 디렉토리 제어 및 파일 권한(Permission) 체계 검증
-터미널에서 기초 명령어를 사용하여 디렉토리를 구축하고, 리눅스 권한 체계의 보안성을 검증했습니다.
+### Step 1. 터미널 위치 탐색 및 디렉토리 파일 조작
+Linux CLI의 절대 경로와 상대 경로의 차이를 이해하고 기초 폴더를 조작한 흔적입니다.
+*   **원리(절대/상대 경로)**: 상대 경로(`./app`)는 현재 위치 기준 얕은 이동에 쓰이고, 절대 경로(`/Users/...`)는 훗날 Docker 마운트(-v)처럼 단 한 치의 경로 이탈도 허용해서는 안 될 때 필수적으로 사용합니다.
 ```bash
 $ pwd
 /Users/hwangjeonghyeon/practice/python-practice
-$ mkdir test
+
 $ ls -la
-01    test
+01    pa.md
 ```
-리눅스의 파일 권한은 8진수 숫자로 오너/그룹/기타 권한을 제어합니다. 각각 **4(읽기), 2(쓰기), 1(실행)** 의 2진 비트 합산으로 도출됩니다. 아래는 `rwx`(7) 상태였던 폴더를 `644`(rw-r--r--)로 억제하여 디렉토리 접근 시뮬레이션을 수행한 로그입니다.
+
+### Step 2. 리눅스 퍼미션(권한) 제어 실습 및 원리 증명
+디렉토리를 생성하고 `chmod` 명령어로 직접 권한을 뺏어봄으로써 접근 불가 상태를 야기했습니다.
+*   **원리(권한 숫자 표기)**: 리눅스 권한은 소유자/그룹/기타 3파트이며, 2진수 합산인 4(읽기)+2(쓰기)+1(실행) 규칙을 따릅니다.
 ```bash
+$ mkdir test
+# 755 상태의 폴더를 644(오너조차 실행 속성을 상실함: 4+2=6(rw))로 제어
 $ chmod 644 test
 $ ls -ld test
 drw-r--r--  2 hwangjeonghyeon  staff  64 Apr  2 23:06 test
+# 결과: rwx(7)였던 디렉토리가 644(rw-r--r--)로 묶여 내부 cd 엑세스가 불가해짐을 확인.
 ```
 
 ---
 
-## 3. Docker 인프라 생명주기 및 네트워크 구성
+## [Phase 2] Docker 인프라 통제 및 어플리케이션 배포
 
-### 3.1 Docker 데몬 확인 및 기반 컨테이너 실행
-로컬의 Docker 상태를 점검하고, 독립된 격리망이 런타임에 문제없이 구동되는지 공식 `hello-world` 이미지를 통해 검증했습니다.
+### Step 3. Docker 데몬(엔진) 상태 및 버전 확인
+우선 Mac 환경 위에서 OrbStack을 사용해 Docker 엔진이 정상적으로 연결되어 있는지 상태를 출력했습니다.
 ```bash
-$ docker info
-Server Version: 28.5.2 \ Operating System: OrbStack \ CPUs: 8 \ Total Memory: 7.808GiB
+$ docker --version
+Docker version 28.5.2, build ecc6942
 
-$ docker run hello-world
-Hello from Docker!
-This message shows that your installation appears to be working correctly.
+$ docker info
+Server Version: 28.5.2
+Operating System: OrbStack
+CPUs: 8
+Total Memory: 7.808GiB
+Docker Root Dir: /var/lib/docker
 ```
 
-### 3.2 이미지와 컨테이너의 기술적 차이 및 빌드
-*   **이미지 (Build 관점)**: OS와 소스가 층층이 결합된 읽기 전용(Read-Only)의 '불변 템플릿(설계도)' 입니다. 
-*   **컨테이너 (Run 관점)**: 위 이미지를 메모리에 띄워 생명력을 부여한 '실행 중인 프로세스 인스턴스' 입니다. 컨테이너 내부에서 발생한 파일 변경은 원본 이미지에 반영되지 않으므로 영구적 변경을 원한다면 아래처럼 무조건 Dockerfile을 통해 새 이미지로 재빌드해야 합니다.
+### Step 4. 최초의 컨테이너 구동 (hello-world & ubuntu 진입)
+*   **원리(이미지와 컨테이너의 차이)**: 이미지는 라이브러리와 OS가 찍힌 읽기 전용 불변 템플릿이며(빌드), 컨테이너는 이를 메모리에 띄운 독립된 프로세스(실행)입니다. 내부 파일 변경은 원본 이미지에 영향이 없습니다.
+```bash
+$ docker run hello-world
 
-**[Nginx 커스텀 웹 서버 빌드 증명]**
+Hello from Docker!
+This message shows that your installation appears to be working correctly.
+
+# 백그라운드 OS 접속 쉘 분리를 위한 Linux 진입 로그 확인
+$ docker run -it ubuntu bash
+root@b45314c54282:/# cat /etc/os-release
+PRETTY_NAME="Ubuntu 22.04.4 LTS"
+```
+
+### Step 5. Dockerfile 커스텀 이미지 빌드
+단순 이미지가 아니라 `nginx:alpine`을 베이스로 삼고, 제 프로젝트 폴더(`01/app/`)를 복사하는 도커파일을 세팅했습니다.
 ```dockerfile
-# Dockerfile
+# 01/Dockerfile
 FROM nginx:alpine
 LABEL maintainer="hwangjeonghyeon"
 COPY app/ /usr/share/nginx/html/
 EXPOSE 80
 ```
 ```bash
+# 내 커스텀 설계도를 이름표 태그로 빌드
 $ docker build -t my-web:1.0 .
 ```
 
-### 3.3 네트워크 격리 개방 및 포트 매핑 (Port Mapping)
-컨테이너는 커널의 Network Namespace에 의해 호스트와 독립된 사설 IP 대역망을 형성하므로 외부에서 직접 접근할 수 없습니다. 따라서 호스트의 특정 포트(예: 8080)로 통신이 밀려들 때 이를 컨테이너망 내부 포트(80)로 포워딩 연결해주는 NAT 기능이 핵심입니다. 이를 누구나 즉시 재현할 수 있도록 구문을 정형화했습니다.
+### Step 6. 네트워크: 포트 매핑 (Port Mapping) 구동 
+*   **원리(포트 매핑의 필수성)**: 컨테이너는 외부와 철저히 차단된 자체 가상 IP망을 쓰기에 직접 접속이 100% 불가능합니다. 외부(브라우저)에서 안으로 통신을 찔러 넣으려면 호스트 포트(8080)와 컨테이너 포트(80)를 연결하는 명시적 라우팅 포트 매핑이 필수입니다.
 ```bash
 $ docker run -d -p 8080:80 --name my-web-8080 my-web:1.0
+c44537b45cd129372960259f883056004a4db7160b78f337939e0b3e21be5f53
 ```
 ![포트 매핑 증명 완료](./01/images/port-map.png)
 
----
-
-## 4. 데이터 영속성 (Data Persistence) 및 스토리지 관리
-
-컨테이너가 파괴(rm)될 때 휘발성 레이어도 함께 소멸하여 데이터 유실이 발생할 수 있습니다. 이를 방지하기 위한 2가지 대안 장치를 모두 테스트했습니다.
-1.  **바인드 마운트 (Bind Mount)**: 호스트의 폴더를 컨테이너 경로에 거울처럼 비춰, 개발 중인 소스코드의 핫 리로딩(Live update)을 지원합니다.
-    ```bash
-    $ docker run -d -p 8081:80 --name my-web-mount -v $(pwd)/app:/usr/share/nginx/html my-web:1.0
-    ```
-2.  **도커 볼륨 (Docker Volume)**: Docker 엔진이 자체 통제하는 스토리지로 볼륨을 생성해 DB나 로그를 완전히 독립적으로 보호합니다.
-
-**[볼륨 영속성 검증 로그]**
+### Step 7. 바운드 마운트 (Bind Mount) 및 실시간 동기화
+이미지를 다시 빌드하지 않고도 로컬 바탕화면의 코드를 바꾸면 컨테이너 웹이 실시간으로 100% 바뀌도록 직통 터널(마운트)을 뚫었습니다.
 ```bash
-$ docker volume create mydata
-$ docker run -d --name vol-test -v mydata:/data ubuntu sleep infinity
-$ docker exec -it vol-test bash -c "echo 'hello volume' > /data/test.txt"
-$ docker rm -f vol-test
-$ docker run -d --name vol-test2 -v mydata:/data ubuntu sleep infinity
-$ docker exec -it vol-test2 cat /data/test.txt
-hello volume
+# 재현 가능성을 위해 $(pwd) 파라미터 삽입으로 자동 절대 경로 추적 실현
+$ docker run -d -p 8081:80 --name my-web-mount -v $(pwd)/01/app:/usr/share/nginx/html my-web:1.0
 ```
-*(결과 검증: 첫 컨테이너를 완벽히 파괴했음에도 불구하고, 동일 볼륨 경로를 마운트한 새 컨테이너에서 test.txt 파일이 보존됨을 확인)*
+![바인드 마운트 증명 완료](./01/images/bind-mount.png)
 
-작업 완료 후, 시스템 리소스 낭비를 막기 위해 미사용 이미지와 구동을 멈춘 목록의 깔끔한 클리어 조치를 수행했습니다.
+### Step 8. 데이터 영속성 - 볼륨(Volume) 기반 정보 수호 증명
+*   **가설 설정**: 컨테이너가 폭파(삭제)될 때 휘발성 데이터도 같이 소멸함을 막기 위한 실험입니다.
+```bash
+# 1. 안전한 격리 스토리지인 Volume 엔진 별도 생성
+$ docker volume create mydata
+
+# 2. 볼륨을 품은 첫 번째 테스트 컨테이너 런칭 및 데이터 텍스트 기입
+$ docker run -d --name vol-test -v mydata:/data ubuntu sleep infinity
+$ docker exec -it vol-test bash -c "echo 'hello volume data!' > /data/test.txt"
+
+# 3. [파괴] 해당 컨테이너 강제 완전 삭제
+$ docker rm -f vol-test
+
+# 4. [복원 확인] 똑같은 볼륨을 갖다 붙인 이름이 전혀 다른 2번째 컨테이너 구동 
+$ docker run -d --name vol-test2 -v mydata:/data ubuntu sleep infinity
+6da740b1d3583c457e08453f18...
+
+# 5. [증명 완료] 파괴된 컨테이너가 썼던 데이터가 완전히 영구 보존됨을 터미널로 확인
+$ docker exec -it vol-test2 cat /data/test.txt
+hello volume data!
+```
+
+### Step 9. 자원 회수 및 쓰레기 컨테이너/이미지 정리 확인
+작업 이후 남겨진 `hello-world` 이미지 등을 색출하여 저장 공간을 환원했습니다.
 ```bash
 $ docker ps -a
+$ docker rm -f vol-test2
 $ docker rmi hello-world
 Untagged: hello-world:latest
 Deleted: sha256:eb84fdc6f2a3a...
@@ -109,34 +125,42 @@ Deleted: sha256:eb84fdc6f2a3a...
 
 ---
 
-## 5. 변경 이력 제어 및 원격 저장소 배포 (Git & GitHub)
+## [Phase 3] Git 활용 형상 관리 세팅 및 Github 연동
 
-기초적인 전역 유저 정보를 세팅하고, 구현된 인프라 산출물을 1차 커밋하여 GitHub 워크스페이스 상에 안정적으로 동기화(Push) 완료했습니다.
+### Step 10. 전역 유저 Auth 및 Github 전송 완료 스크립트 모음
+수행한 모든 자산을 Git으로 패키징하고, 원격 스토리지(Codyssey)에 Push 완료했습니다.
 ```bash
-$ git config --global user.name "jeonghyeon"
-$ git config --global user.email "new.codey99@gmail.com"
+$ git config --list
+credential.helper=osxkeychain
+init.defaultbranch=main
+user.name=jeonghyeon
+user.email=new.codey99@gmail.com
+
 $ git init
 $ git add . && git commit -m "docs: init"
+[main (root-commit) af77ba9] workspace
+ 4 files changed, 394 insertions(+)
+
 $ git remote add origin https://github.com/newcode99/Codyssey.git
 $ git push -u origin main
+Enumerating objects: 8, done.
+Writing objects: 100% (8/8), 7.02 KiB | 7.02 MiB/s, done.
+To https://github.com/newcode99/Codyssey.git
+ * [new branch]      main -> main
 ```
 ![Git 브랜치 동기화 확인](./01/images/git-branch.png)  
-*(VSCode 환경에서 로컬 main과 원격 origin/main 의 완벽한 트래킹 연동 확인)*
 
 ---
 
-## 6. 심층 회고 및 트러블슈팅 (Troubleshooting)
+## [추록] 심층 트러블슈팅(Troubleshooting) 진단 일지
 
-### Trouble 1. 호스트 포트 충돌에 따른 매핑 실패 진단 시나리오
-컨테이너 배포 시 `port is already allocated` 와 같은 에러 조우 시의 대응 매뉴얼입니다.
-1. 먼저 `lsof -i :8080` 이나 `netstat -ano` 를 타격하여 호스트 측에서 해당 포트를 점유하고 있는 프로세스를 색출합니다.
-2. `docker ps -a` 명령어로 본인도 모르게 시스템 백그라운드에서 살아 숨 쉬는 방치된 컨테이너가 포트를 물고 있는지 찾아냅니다.
-3. 원흉 프로세스를 강제 `kill` 시키거나, 운영체제 필수망일 경우 `-p 8081:80` 처럼 타겟 우회 매핑을 실시하여 충돌을 안전하게 돌파합니다.
+**1. 포트 점유 충돌(Port already allocated) 시 대응 프로토콜**
+*   **시나리오**: 포트 매핑 시 이미 사용 중이라는 에러 발생 시의 절차.
+*   **조치**: `lsof -i :8080` (Mac 환경) 및 `netstat`을 통해 점유 범인 PID를 포착. 이후 `docker ps -a`로 미처 삭제하지 않은 이전 실습 컨테이너가 있는지 확인 후, `kill` 또는 `docker rm -f`로 포트를 반환받음. (시스템 필수 포트일 시 `-p 8081:80` 으로 포워딩 넘버 우회전개).
 
-### Trouble 2. 컨테이너 잔여 쓰레기에 의한 네임스페이스 이름 충돌 극복
-*   **가설 설정**: 볼륨 컨테이너 할당 중 `The container name is already in use` 충돌 발생. 멈춰둔 컨테이너가 동작만 멈춘(Exited) 것일 뿐, 시스템 Namespace 상에는 존재 좌표가 그대로 남아있을 것이라 추론.
-*   **증명 및 조치**: `docker ps` 대신 보이지 않는 시체까지 띄워주는 `-a` 필터로 구동이 중단된 과거 컨테이너 흔적을 포착. 즉각 `docker rm -f vol-test` 로 찌꺼기를 날려버린 후 재구동하자 성공함. 컨테이너 라이프 사이클의 엄격한 폐기 절차를 인지한 중요한 회고 포인트였습니다.
+**2. 컨테이너 잔여 쓰레기에 의한 네임스페이스 이름 충돌 극복**
+*   **가설 수립**: 볼륨 생성 실습 중 `The container name is already in use` 라는 Conflict 에러 발생. "구동을 멈춰(Exited) 뒀더라도, Docker 데몬의 네임스페이스 점유권은 완전히 파기(rm)할 때까지 남아있을 것" 이라 추론.
+*   **확인 및 조치**: `docker ps`로는 안 보이던 시체를 `-a` 옵션을 통해 잠든 `vol-test` 흔적으로 포착. `docker rm -f`로 완전히 날려버린 뒤에서야 충돌 없이 재구동됨을 검증하며 컨테이너 철거의 중요성을 체득.
 
-### Trouble 3. 무기명 접근 차단(No anonymous write access) 권한 에러 해결
-*   GitHub로 Push 진행 시 권한 인가가 거절됨.
-*   정책상의 SSH 키 또는 패스워드 토큰 인증이 누락되었음을 인지하고, VSCode 내부의 Source Control Auth 플로우를 통해 Oauth 권한 승인을 돌파해 안전하게 원격지 코드를 전송 마감했습니다.
+**3. 무기명 접근 차단 권한 에러 해결**
+*   `remote: No anonymous write access` Push 거부 에러 직면. 즉시 브라우저 Auth Flow 및 VSCode의 Source Control 인증 인가 창을 트리거하여 본인 계정을 투입해 Push 전송에 성공 완료.
