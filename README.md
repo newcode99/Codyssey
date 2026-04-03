@@ -99,14 +99,15 @@ $ docker build -t my-web:1.0 .
 $ docker run -d -p 8080:80 --name my-web-8080 my-web:1.0
 c44537b45cd129372960259f883056004a4db7160b78f337939e0b3e21be5f53
 ```
-![포트매핑 증거](./images/port-map.png)  
+![포트매핑 증거](./01/images/port-map.png)  
 *(▲ 8080 포트를 통해 호스트 환경에서 컨테이너 웹 서버에 정상 접근한 증거)*
 
 **4) 바인드 마운트 실시간 소스 반영 증거**
 ```bash
 $ docker run -d -p 8081:80 --name my-web-mount -v $(pwd)/app:/usr/share/nginx/html my-web:1.0
 ```
-![바인드마운트 증거](./images/bind-mount.png)  
+
+![바인드마운트 증거](./01/images/bind-mount.png)  
 *(▲ 이미지를 재빌드하지 않고도 볼륨 공유를 통해 호스트 터미널에서 수정한 index.html 코드가 브라우저에 즉시 반영됨)*
 
 **5) Docker 볼륨 영속성 검증 (핵심 증거 자료)**
@@ -150,7 +151,7 @@ $ git commit -m "workspace"
 $ git remote add origin https://github.com/newcode99/Codyssey.git
 $ git push -u origin main
 ```
-![Git 브랜치 동기화 확인](./images/git-branch.png)  
+![Git 브랜치 동기화 확인](./01/images/git-branch.png)  
 *(▲ VSCode 환경에서 로컬의 main 브랜치와 원격 origin/main 브랜치가 성공적으로 트래킹 연동된 상태 확인)*
 
 ---
