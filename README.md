@@ -63,16 +63,18 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"
 
 ### Step 5. Dockerfile 커스텀 이미지 빌드
 단순 이미지가 아니라 `nginx:alpine`을 베이스로 삼고, 제 프로젝트 폴더(`01/app/`)를 복사하는 도커파일을 세팅했습니다.
-```dockerfile
-# 01/Dockerfile
+```bash
+# 내 커스텀 설계도를 이름표 태그로 빌드하기 전, 디렉토리 준비 및 Dockerfile 생성
+$ mkdir -p 01/app
+$ cat > 01/Dockerfile << 'EOF'
 FROM nginx:alpine
 LABEL maintainer="hwangjeonghyeon"
 COPY app/ /usr/share/nginx/html/
 EXPOSE 80
-```
-```bash
-# 내 커스텀 설계도를 이름표 태그로 빌드
-$ docker build -t my-web:1.0 .
+EOF
+
+# 위 커스텀 설계도를 기반으로 이미지 빌드 실행
+$ docker build -t my-web:1.0 ./01
 ```
 
 ### Step 6. 네트워크: 포트 매핑 (Port Mapping) 구동 
@@ -84,9 +86,19 @@ c44537b45cd129372960259f883056004a4db7160b78f337939e0b3e21be5f53
 ![포트 매핑 증명 완료](./01/images/port-map.png)
 
 ### Step 7. 바운드 마운트 (Bind Mount) 및 실시간 동기화
-이미지를 다시 빌드하지 않고도 로컬 바탕화면의 코드를 바꾸면 컨테이너 웹이 실시간으로 100% 바뀌도록 직통 터널(마운트)을 뚫었습니다.
+이미지를 다시 빌드하지 않고도 호스트의 코드를 바꾸면 컨테이너 웹이 실시간으로 바뀌게 마운트합니다.
 ```bash
-# 재현 가능성을 위해 $(pwd) 파라미터 삽입으로 자동 절대 경로 추적 실현
+# 먼저 호스트(내 컴퓨터)에 띄워줄 웹 페이지 소스코드용 HTML 파일 생성
+$ cat > 01/app/index.html << 'EOF'
+<!DOCTYPE html>
+<html>
+<body>
+  <h1>Bind Mount Works!</h1>
+</body>
+</html>
+EOF
+
+# 재현 가능성을 위해 $(pwd) 파라미터 삽입으로 자동 절대 경로 추적 실현 (호스트 app 폴더 <-> 컨테이너 html 폴더 동기화)
 $ docker run -d -p 8081:80 --name my-web-mount -v $(pwd)/01/app:/usr/share/nginx/html my-web:1.0
 ```
 ![바인드 마운트 증명 완료](./01/images/bind-mount.png)
