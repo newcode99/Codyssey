@@ -138,6 +138,22 @@ class QuizGame:
         if self.delete_quiz(target_idx - 1):
             print("[성공] 해당 퀴즈가 영구 소거됨.")
 
+    def view_statistics(self) -> None:
+        """역대 최고 점수와 플레이 기록(히스토리)을 터미널에 시각화 함"""
+        print("\n--- [ 게임 통계 및 기록 ] ---")
+        print(f"★ 역대 최고 점수: {self.best_score}점")
+        print("-" * 30)
+        
+        if not self.history:
+            print("[알림] 아직 플레이 기록이 존재하지 않음.")
+            return
+
+        print(" [ 최근 플레이 이력 (최신순) ]")
+        # 최근 기록이 위로 오도록 역순(Reversed)으로 출력함
+        for record in reversed(self.history):
+            print(f"- {record['date']} | 점수: {record['score']}점")
+        print("-" * 30)
+
     def update_history(self, score: int) -> None:
         """플레이 결과를 타임스탬프와 함께 히스토리에 누적함"""
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
