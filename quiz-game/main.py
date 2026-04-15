@@ -1,4 +1,5 @@
 import sys
+import readline  # 터미널 한글 입력 잔상 제거 및 백스페이스 너비 인식 오류 처리를 위함
 from game import QuizGame
 from utils import get_valid_input
 
