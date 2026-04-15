@@ -74,6 +74,37 @@ class QuizGame:
             return True
         return False
 
+    def process_add_quiz(self) -> None:
+        """사용자로부터 입력을 받아 새로운 퀴즈를 생성하는 일련의 과정을 제어함"""
+        print("\n--- 새 퀴즈 추가 (질문 입력 시 빈칸이면 취소됨) ---")
+        
+        # 1. 질문 입력 및 취소 로직
+        question = input("질문 내용: ").strip()
+        if not question:
+            print("[알림] 질문이 입력되지 않아 추가가 취소됨.")
+            return
+
+        # 2. 4개의 선택지 수집 작업
+        choices = []
+        for i in range(1, 5):
+            while True:
+                choice = input(f"선택지 {i}: ").strip()
+                if choice:
+                    choices.append(choice)
+                    break
+                print("[오류] 선택지 내용은 비어있을 수 없음.")
+
+        # 3. 정답 번호 입력 (utils 필터링 활용)
+        print("\n[정답 번호 설정]")
+        answer = get_valid_input("정답 번호 (1~4): ", 1, 4)
+
+        # 4. 검증 완료된 부품들로 최종 Quiz 객체 생성 및 리스트 추가
+        try:
+            self.add_quiz(question, choices, answer)
+            print("\n[성공] 새로운 퀴즈가 목록에 추가됨.")
+        except ValueError as e:
+            print(f"\n[오류] 퀴즈 생성 실패: {e}")
+
     def update_history(self, score: int) -> None:
         """플레이 결과를 타임스탬프와 함께 히스토리에 누적함"""
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
