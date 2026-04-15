@@ -105,6 +105,39 @@ class QuizGame:
         except ValueError as e:
             print(f"\n[오류] 퀴즈 생성 실패: {e}")
 
+    def view_quizzes(self) -> None:
+        """현재 탑재된 모든 퀴즈 목록을 번호와 함께 시각화 함"""
+        if not self.quizzes:
+            print("\n[알림] 등록된 퀴즈가 없어 조회할 수 없음.")
+            return
+
+        print("\n--- 전체 퀴즈 목록 ---")
+        for i, quiz in enumerate(self.quizzes, start=1):
+            print(f"{i}. {quiz.question}")
+
+    def process_delete_quiz(self) -> None:
+        """목록을 보여준 뒤, 사용자로부터 번호를 입력받아 퀴즈를 안전하게 삭제함"""
+        if not self.quizzes:
+            print("\n[알림] 삭제할 퀴즈가 존재하지 않음.")
+            return
+
+        self.view_quizzes()
+        print(f"0. [취소하고 돌아가기]")
+        
+        # 삭제 대상 번호 입력 (범위: 0 ~ 퀴즈 개수)
+        target_idx = get_valid_input("\n삭제할 퀴즈 번호 선택: ", 0, len(self.quizzes))
+
+        if target_idx == 0:
+            print("[알림] 삭제가 취소됨.")
+            return
+
+        # 실제 삭제 수행 (리스트 인덱스 보정: 입력값이 1부터 시작하므로 -1 처리)
+        removed_quiz = self.quizzes[target_idx - 1]
+        print(f"\n[대상 확인] 다음 퀴즈를 삭제함: {removed_quiz.question}")
+        
+        if self.delete_quiz(target_idx - 1):
+            print("[성공] 해당 퀴즈가 영구 소거됨.")
+
     def update_history(self, score: int) -> None:
         """플레이 결과를 타임스탬프와 함께 히스토리에 누적함"""
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
