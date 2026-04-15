@@ -82,3 +82,41 @@ class QuizGame:
         # 최고 점수 자동 갱신 로직
         if score > self.best_score:
             self.best_score = score
+
+    def play_quiz(self) -> None:
+        """저장된 퀴즈 목록을 순회하며 게임을 진행하고 점수를 집계함"""
+        if not self.quizzes:
+            print("[알림] 등록된 퀴즈가 없음. 먼저 퀴즈를 추가해 주어야 함.")
+            return
+
+        current_score = 0
+        total_quizzes = len(self.quizzes)
+
+        print("\n--- 퀴즈 플레이 시작 (5번 입력 시 중도 포기 및 정산) ---")
+        
+        for i, quiz in enumerate(self.quizzes, start=1):
+            print(f"\n[문제 {i}/{total_quizzes}]")
+            quiz.display()
+            print("5. [중도 포기 및 현재까지의 점수 정산]")
+
+            # utils 필터를 통해 정제된 숫자(1~5) 확보 작업
+            user_choice = get_valid_input("\n정답 선택: ", 1, 5)
+
+            # 1. 5번 입력 시 루프를 탈정하여 현재까지의 점수만 인정함
+            if user_choice == 5:
+                print("\n[알림] 중도 포기 감지. 현재까지 맞춘 점수로 정산을 진행함.")
+                break
+
+            # 2. 채점 및 결과 출력 작업
+            if quiz.check_answer(user_choice):
+                print(">> 정답임! (+1점)")
+                current_score += 1
+            else:
+                print(f">> 오답임. (정답: {quiz.answer}번)")
+
+        # 3. 최종 플레이 결과 출력 및 데이터 갱신 작업
+        print("\n--- 게임 종료 ---")
+        print(f"최종 결과: {current_score} / {total_quizzes}")
+        
+        # 히스토리 누적 및 최고 점수 비교 갱신 진행
+        self.update_history(current_score)
