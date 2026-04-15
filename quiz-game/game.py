@@ -7,7 +7,7 @@ from utils import get_valid_input
 class QuizGame:
     """게임의 상태 관리, 파일 입출력, 핵심 비즈니스 로직을 담당하는 뇌(Brain) 역할"""
 
-    def __init__(self, data_path="state.json"):
+    def __init__(self, data_path="quiz-game/state.json"):
         # 1. 시스템 설정 및 데이터 경로 초기화 작업
         self.data_path = data_path
         self.quizzes = []
@@ -20,7 +20,19 @@ class QuizGame:
     def load_state(self) -> None:
         """하드디스크에서 데이터를 읽어와 RAM(quizzes, history)에 적재함"""
         if not os.path.exists(self.data_path):
-            # 파일이 없는 경우(최초 실행) 빈 상태로 시작함
+            # 최초 실행 시 기본 데이터(수도 퀴즈) 부여
+            self.history = []
+            self.best_score = 0
+            
+            # 기본 탑재될 수도 퀴즈 세트 (Hardcoded Defaults)
+            default_quizzes = [
+                {"question": "대한민국의 수도는 어디입니까?", "choices": ["부산", "서울", "인천", "대구"], "answer": 2},
+                {"question": "프랑스의 수도는 어디입니까?", "choices": ["리옹", "마르세유", "파리", "니스"], "answer": 3},
+                {"question": "일본의 수도는 어디입니까?", "choices": ["오사카", "교토", "후쿠오카", "도쿄"], "answer": 4},
+                {"question": "이탈리아의 수도는 어디입니까?", "choices": ["로마", "밀라노", "베네치아", "피렌체"], "answer": 1},
+                {"question": "미국의 수도는 어디입니까?", "choices": ["뉴욕", "로스앤젤레스", "워싱턴 D.C.", "시카고"], "answer": 3}
+            ]
+            self.quizzes = [Quiz.from_dict(q) for q in default_quizzes]
             return
 
         try:
