@@ -25,8 +25,8 @@ echo ""
 echo "[HEALTH CHECK]"
 
 # 1-1. 프로세스 확인
-# pgrep -f 옵션으로 해당 이름을 가진 프로세스의 PID 추출
-PID=$(pgrep -f "$AGENT_APP_NAME")
+# pgrep 옵션에서 -f를 제외하여 실제 명령어(agent-app)만 정확히 매칭하고, PID가 여러 개일 경우 콤마로 한 줄 출력 처리
+PID=$(pgrep "$AGENT_APP_NAME" | paste -sd, -)
 if [ -z "$PID" ]; then
     echo "[ERROR] 프로세스 '$AGENT_APP_NAME' 실행 중지 상태."
     exit 1
