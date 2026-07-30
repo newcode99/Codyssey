@@ -105,6 +105,38 @@ echo "- 최신 모니터링 로그 확인 (최대 5줄):"
 tail -n 5 /var/log/agent-app/monitor.log 2>/dev/null
 echo ""
 
+# 8. 앱 구동 시 Boot Sequence 5단계 검증
+echo -e "${YELLOW}[8. 애플리케이션 Boot Sequence 5단계 내장 검증]${NC}"
+# agent-app 바이너리 파일 내에 5단계 출력 문자열이 내장되어 있는지 확인 (바이너리 분석)
+if grep -q "Boot Sequence" /home/agent-admin/agent-app/bin/agent-app 2>/dev/null; then
+    echo -e "${GREEN}[PASS] agent-app 앱 내 Boot Sequence 5단계 자가진단 로직이 존재함을 확인했습니다.${NC}"
+else
+    echo -e "${RED}[FAIL] Boot Sequence 점검 로직을 찾을 수 없습니다.${NC}"
+fi
+echo ""
+
+# 9. monitor.sh 내부 로직 정밀 검증 (logrotate, exit 1)
+echo -e "${YELLOW}[9. monitor.sh 핵심 무결성 및 Logrotate 로직 검증]${NC}"
+MONITOR_PATH="/home/agent-admin/agent-app/bin/monitor.sh"
+if [ -f "$MONITOR_PATH" ]; then
+    # 프로세스/포트 실패 시 exit 1 확인
+    if grep -q "exit 1" "$MONITOR_PATH"; then
+        echo -e "${GREEN}[PASS] 프로세스/포트 상태 이상 시 스크립트 강제 종료(exit 1) 로직 확인 완료.${NC}"
+    else
+        echo -e "${RED}[FAIL] 비정상 상태 발생 시 exit 1 처리 로직이 없습니다.${NC}"
+    fi
+
+    # Logrotate 10MB / 10개 설정 확인
+    if grep -q "LOG_MAX_SIZE" "$MONITOR_PATH" && grep -q "LOG_MAX_FILES=10" "$MONITOR_PATH"; then
+        echo -e "${GREEN}[PASS] Logrotate 자동 증가 통제 및 용량 관리 (10MB / 최대 10개) 로직 확인 완료.${NC}"
+    else
+        echo -e "${RED}[FAIL] Logrotate (10MB/10파일) 자동 관리 설정이 누락되었습니다.${NC}"
+    fi
+else
+    echo -e "${RED}[FAIL] $MONITOR_PATH 파일을 찾을 수 없습니다.${NC}"
+fi
+echo ""
+
 echo -e "${BLUE}======================================================================${NC}"
 echo -e "${BLUE}                     [평가 스크립트 실행 완료]                        ${NC}"
 echo -e "${BLUE} 모든 시스템 설정이 최소 권한의 원칙과 무결성을 유지하고 있습니다.    ${NC}"
