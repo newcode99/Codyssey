@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="모던 바닐라 웹 기술로 구현된 반응형 개발자 포트폴리오 웹사이트입니다.">
+  <title>Frontend Developer Portfolio | 모던 바닐라 웹 포트폴리오</title>
+
+  <!-- Google Fonts: Inter & Outfit -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800&display=swap" rel="stylesheet">
+
+  <!-- Font Awesome 6.5 Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+  <!-- Main External Stylesheet -->
+  <link rel="stylesheet" href="css/style.css">
+
+  <!-- Zero-FOUC 동기식 테마 선행 스크립트 -->
+  <script>
+    (function() {
+      const savedTheme = localStorage.getItem('theme');
+      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+      const theme = savedTheme || (prefersDark ? 'dark' : 'light');
+      document.documentElement.dataset.theme = theme;
+    })();
+  </script>
+
+  <!-- Main Entry Script (ES Module) -->
+  <script type="module" src="js/main.js" defer></script>
+</head>
+<body>
+
+  <!-- ==================== HEADER & NAVIGATION ==================== -->
+  <header id="header" class="site-header">
+    <div class="container nav-container">
+      <a href="#hero" class="brand-logo" aria-label="포트폴리오 홈으로 이동">
+        <span class="logo-symbol">&lt;/&gt;</span>
+        <span class="logo-text">DevPortfolio<span class="dot">.</span></span>
+      </a>
+
+      <!-- Desktop & Mobile Navigation Links -->
+      <nav id="nav-menu" class="nav-menu" aria-label="주요 메뉴">
+        <ul class="nav-list">
+          <li class="nav-item"><a href="#hero" class="nav-link active">Home</a></li>
+          <li class="nav-item"><a href="#about" class="nav-link">About</a></li>
+          <li class="nav-item"><a href="#skills" class="nav-link">Skills</a></li>
+          <li class="nav-item"><a href="#projects" class="nav-link">Projects</a></li>
+          <li class="nav-item"><a href="#contact" class="nav-link">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Action Group: Theme Toggle & Hamburger Button -->
+      <div class="nav-actions">
+        <button id="theme-toggle-btn" class="theme-toggle-btn" aria-label="다크 모드 및 라이트 모드 전환" title="테마 변경">
+          <i class="fa-solid fa-moon"></i>
+        </button>
+
+        <button id="hamburger-btn" class="hamburger-btn" aria-label="모바일 메뉴 열기" aria-expanded="false" aria-controls="nav-menu">
+          <span class="bar"></span>
+          <span class="bar"></span>
+          <span class="bar"></span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ==================== MAIN CONTENT ==================== -->
+  <main id="main-content">
+
+    <!-- 1. HERO SECTION -->
+    <section id="hero" class="hero-section section animate-on-scroll">
+      <div class="container hero-container">
+        <div class="hero-content">
+          <div class="badge-tag">
+            <span class="pulse-indicator"></span>
+            웹 프론트엔드 엔지니어
+          </div>
+          <h1 class="hero-title">
+            사용자 경험을 혁신하는<br>
+            <span class="gradient-text">웹 기술의 정수</span>를 만듭니다.
+          </h1>
+          <p class="hero-description">
+            외부 라이브러리 없이 순수 HTML, CSS, JavaScript로 견고한 반응형 아키텍처를 설계합니다.
+            “사용자 이벤트 → 상태 머신 → 최적화된 렌더링”으로 이어지는 웹의 원리를 지향합니다.
+          </p>
+          <div class="hero-cta-group">
+            <a href="#projects" class="btn btn-primary">
+              <span>프로젝트 탐색</span>
+              <i class="fa-solid fa-arrow-right"></i>
+            </a>
+            <a href="#contact" class="btn btn-secondary">
+              <span>문의하기</span>
+              <i class="fa-regular fa-envelope"></i>
+            </a>
+          </div>
+          <div class="hero-social-links">
+            <a href="https://github.com/newcode99" target="_blank" rel="noopener noreferrer" aria-label="GitHub 프로필 바로가기">
+              <i class="fa-brands fa-github"></i>
+            </a>
+            <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn 프로필 바로가기">
+              <i class="fa-brands fa-linkedin-in"></i>
+            </a>
+            <a href="mailto:new.codery99@gmail.com" aria-label="이메일 문의 바로가기">
+              <i class="fa-solid fa-at"></i>
+            </a>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="visual-card-glass">
+            <img src="images/hero_tech.jpg" alt="모던 웹 개발 3D 기술 그래픽 일러스트레이션" class="hero-graphic-img">
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 2. ABOUT SECTION -->
+    <section id="about" class="about-section section animate-on-scroll">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">ABOUT ME</span>
+          <h2 class="section-title">본질에 집중하는 엔지니어링 철학</h2>
+          <div class="section-divider"></div>
+        </div>
+
+        <div class="about-grid">
+          <div class="about-image-wrapper">
+            <div class="profile-frame">
+              <img src="images/profile.jpg" alt="프론트엔드 소프트웨어 엔지니어 프로필 사진" class="profile-img">
+              <div class="experience-badge">
+                <span class="badge-number">100%</span>
+                <span class="badge-label">Pure Vanilla</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="about-text-content">
+            <h3 class="about-heading">탄탄한 기초 위에 유연한 소프트웨어를 구축합니다</h3>
+            <p class="about-paragraph">
+              프레임워크의 편리함에 앞서 브라우저 엔진의 렌더 트리 생성 메커니즘과 이벤트 루프의 동작 원리를 깊이 탐구합니다.
+              단순히 화면을 그리는 것에 멈추지 않고, 웹 표준 시맨틱 마크업과 웹 접근성(a11y), 성능 최적화를 기본 설계 가치로 삼습니다.
+            </p>
+            <p class="about-paragraph">
+              React/Vue 등 모던 프레임워크가 추상화한 컴포넌트, 상태(State), 비동기 데이터 파이프라인을 바닐라 자바스크립트로 직접 모듈화하여 실증 구현할 수 있는 실무 역량을 보유하고 있습니다.
+            </p>
+
+            <div class="key-traits-grid">
+              <div class="trait-card">
+                <div class="trait-icon"><i class="fa-solid fa-cubes"></i></div>
+                <div class="trait-info">
+                  <h4>모듈형 부품 설계 (SRP)</h4>
+                  <p>단일 책임 원칙에 기반한 독립적이고 재사용 가능한 모듈 구조</p>
+                </div>
+              </div>
+              <div class="trait-card">
+                <div class="trait-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="trait-info">
+                  <h4>방어적 엔지니어링</h4>
+                  <p>XSS 공격 차단, API 한도 초과 및 예외 상태의 철저한 가드레일</p>
+                </div>
+              </div>
+              <div class="trait-card">
+                <div class="trait-icon"><i class="fa-solid fa-mobile-screen-button"></i></div>
+                <div class="trait-info">
+                  <h4>모바일 퍼스트 반응형</h4>
+                  <p>모든 디바이스 환경에서 최적의 비율과 유연성을 제공하는 유려한 레이아웃</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3. SKILLS SECTION -->
+    <section id="skills" class="skills-section section animate-on-scroll">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">TECH STACK</span>
+          <h2 class="section-title">보유 핵심 기술 스택</h2>
+          <div class="section-divider"></div>
+        </div>
+
+        <div class="skills-category-grid">
+          <!-- Category 1: Frontend Core -->
+          <div class="skill-category-card">
+            <div class="category-header">
+              <div class="category-icon"><i class="fa-brands fa-html5"></i></div>
+              <h3>Frontend Core</h3>
+            </div>
+            <ul class="skill-badge-list">
+              <li class="skill-badge"><i class="fa-brands fa-html5"></i> HTML5 Semantic</li>
+              <li class="skill-badge"><i class="fa-brands fa-css3-alt"></i> CSS3 Modern Layout</li>
+              <li class="skill-badge"><i class="fa-brands fa-js"></i> JavaScript ES6+</li>
+              <li class="skill-badge"><i class="fa-solid fa-border-all"></i> Flexbox & CSS Grid</li>
+              <li class="skill-badge"><i class="fa-solid fa-palette"></i> CSS Variables & Theme</li>
+              <li class="skill-badge"><i class="fa-solid fa-eye"></i> Web Accessibility (a11y)</li>
+            </ul>
+          </div>
+
+          <!-- Category 2: Asynchronous & APIs -->
+          <div class="skill-category-card">
+            <div class="category-header">
+              <div class="category-icon"><i class="fa-solid fa-network-wired"></i></div>
+              <h3>Network & Async</h3>
+            </div>
+            <ul class="skill-badge-list">
+              <li class="skill-badge"><i class="fa-solid fa-bolt"></i> Fetch API & Async/Await</li>
+              <li class="skill-badge"><i class="fa-solid fa-diagram-project"></i> 4-State Machine UI</li>
+              <li class="skill-badge"><i class="fa-solid fa-code"></i> RESTful API Integration</li>
+              <li class="skill-badge"><i class="fa-solid fa-database"></i> LocalStorage Persistence</li>
+              <li class="skill-badge"><i class="fa-solid fa-shield"></i> XSS Sanitization</li>
+              <li class="skill-badge"><i class="fa-solid fa-gauge-high"></i> IntersectionObserver</li>
+            </ul>
+          </div>
+
+          <!-- Category 3: Tools & Architecture -->
+          <div class="skill-category-card">
+            <div class="category-header">
+              <div class="category-icon"><i class="fa-solid fa-screwdriver-wrench"></i></div>
+              <h3>Tools & Architecture</h3>
+            </div>
+            <ul class="skill-badge-list">
+              <li class="skill-badge"><i class="fa-brands fa-git-alt"></i> Git Version Control</li>
+              <li class="skill-badge"><i class="fa-brands fa-github"></i> GitHub Pages Hosting</li>
+              <li class="skill-badge"><i class="fa-solid fa-puzzle-piece"></i> Single Responsibility (SRP)</li>
+              <li class="skill-badge"><i class="fa-solid fa-mobile"></i> Mobile-First Media Queries</li>
+              <li class="skill-badge"><i class="fa-solid fa-terminal"></i> Chrome DevTools Auditing</li>
+              <li class="skill-badge"><i class="fa-solid fa-check-double"></i> Clean Code Standards</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 4. PROJECTS SECTION (GITHUB API INTEGRATION) -->
+    <section id="projects" class="projects-section section animate-on-scroll">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">PORTFOLIO WORK</span>
+          <h2 class="section-title">GitHub 연동 라이브 프로젝트</h2>
+          <p class="section-desc">
+            GitHub REST API와 연동되어 실시간으로 업데이트되는 공개 저장소 갤러리입니다.
+            로딩, 성공, 실패, 빈 상태의 4가지 상태 머신에 따라 반응형 카드가 렌더링됩니다.
+          </p>
+          <div class="section-divider"></div>
+        <!-- Interactive State Controller (Live State Simulator) -->
+        <div class="state-controller-wrapper">
+          <div class="state-controller-header">
+            <span class="controller-badge"><i class="fa-solid fa-flask"></i> 상태 제어기 (Live State Simulator)</span>
+            <span class="controller-desc">평가 및 기능 검증을 위해 4대 API 상태를 실시간으로 직접 전환해 볼 수 있습니다:</span>
+          </div>
+          <div class="state-controller-buttons" role="tablist" aria-label="GitHub API 상태 시뮬레이션">
+            <button type="button" class="state-btn active" data-state="success" role="tab" aria-selected="true" id="btn-state-success">
+              <i class="fa-solid fa-circle-check"></i> 실시간 API (성공)
+            </button>
+            <button type="button" class="state-btn" data-state="loading" role="tab" aria-selected="false" id="btn-state-loading">
+              <i class="fa-solid fa-spinner"></i> 로딩 상태
+            </button>
+            <button type="button" class="state-btn" data-state="error" role="tab" aria-selected="false" id="btn-state-error">
+              <i class="fa-solid fa-triangle-exclamation"></i> 에러 상태 (403/실패)
+            </button>
+            <button type="button" class="state-btn" data-state="empty" role="tab" aria-selected="false" id="btn-state-empty">
+              <i class="fa-solid fa-folder-open"></i> 빈 상태 (저장소 0개)
+            </button>
+          </div>
+        </div>
+
+        <!-- Dynamic Container Controlled by js/api.js & js/ui.js -->
+        <div id="projects-container" class="projects-container">
+          <!-- Initial loading or fallback markup before JS execution -->
+          <div class="status-box loading-box" role="status" aria-live="polite">
+            <div class="spinner" aria-hidden="true"></div>
+            <p>GitHub 저장소 데이터를 비동기로 불러오는 중입니다...</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 5. CONTACT SECTION -->
+    <section id="contact" class="contact-section section animate-on-scroll">
+      <div class="container">
+        <div class="section-header">
+          <span class="section-subtitle">GET IN TOUCH</span>
+          <h2 class="section-title">프로젝트 문의 및 협업 제안</h2>
+          <p class="section-desc">새로운 아이디어나 협업에 대해 편하게 메시지를 남겨주세요.</p>
+          <div class="section-divider"></div>
+        </div>
+
+        <div class="contact-wrapper">
+          <!-- Left Info Cards -->
+          <div class="contact-info-panel">
+            <div class="info-card">
+              <div class="info-icon"><i class="fa-solid fa-envelope"></i></div>
+              <div class="info-details">
+                <h4>이메일 문의</h4>
+                <p><a href="mailto:new.codery99@gmail.com">new.codery99@gmail.com</a></p>
+              </div>
+            </div>
+            <div class="info-card">
+              <div class="info-icon"><i class="fa-solid fa-location-dot"></i></div>
+              <div class="info-details">
+                <h4>활동 거점</h4>
+                <p>대한민국 서울특별시 (Seoul, Korea)</p>
+              </div>
+            </div>
+            <div class="info-card">
+              <div class="info-icon"><i class="fa-brands fa-github"></i></div>
+              <div class="info-details">
+                <h4>GitHub 프로필</h4>
+                <p><a href="https://github.com/newcode99" target="_blank" rel="noopener noreferrer">github.com/newcode99</a></p>
+              </div>
+            </div>
+            <div class="info-card-highlight">
+              <i class="fa-regular fa-clock"></i>
+              <p>영업일 기준 24시간 이내에 신속하게 답변해 드립니다.</p>
+            </div>
+          </div>
+
+          <!-- Right Interactive Form -->
+          <div class="contact-form-panel">
+            <form id="contact-form" class="contact-form" novalidate>
+              <div class="form-group">
+                <label for="contact-name">성함 또는 담당자명 <span class="required">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fa-regular fa-user input-icon"></i>
+                  <input type="text" id="contact-name" name="name" class="form-input" placeholder="홍길동" autocomplete="name" required>
+                </div>
+                <span id="error-name" class="error-message" role="alert"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="contact-email">회신받으실 이메일 주소 <span class="required">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fa-regular fa-envelope input-icon"></i>
+                  <input type="email" id="contact-email" name="email" class="form-input" placeholder="name@example.com" autocomplete="email" required>
+                </div>
+                <span id="error-email" class="error-message" role="alert"></span>
+              </div>
+
+              <div class="form-group">
+                <label for="contact-message">메시지 내용 <span class="required">*</span></label>
+                <div class="input-wrapper">
+                  <i class="fa-regular fa-comment-dots input-icon textarea-icon"></i>
+                  <textarea id="contact-message" name="message" class="form-input form-textarea" rows="5" placeholder="프로젝트 제안 또는 문의하실 내용을 입력해주세요 (최소 10자 이상)" required></textarea>
+                </div>
+                <span id="error-message" class="error-message" role="alert"></span>
+              </div>
+
+              <button type="submit" id="submit-btn" class="btn btn-primary btn-block">
+                <span>메시지 전송하기</span>
+                <i class="fa-regular fa-paper-plane"></i>
+              </button>
+
+              <div id="form-success-msg" class="form-success-box" role="status" aria-live="polite"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- ==================== FOOTER ==================== -->
+  <footer class="site-footer">
+    <div class="container footer-container">
+      <div class="footer-top">
+        <div class="footer-brand">
+          <span class="logo-symbol">&lt;/&gt;</span>
+          <span class="logo-text">DevPortfolio<span class="dot">.</span></span>
+          <p class="footer-tagline">순수 웹 표준 기술로 빚어낸 반응형 포트폴리오</p>
+        </div>
+        <div class="footer-social">
+          <a href="https://github.com/newcode99" target="_blank" rel="noopener noreferrer" aria-label="GitHub 프로필 바로가기"><i class="fa-brands fa-github"></i></a>
+          <a href="https://linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><i class="fa-brands fa-linkedin-in"></i></a>
+          <a href="mailto:new.codery99@gmail.com" aria-label="이메일 보내기"><i class="fa-solid fa-envelope"></i></a>
+          <a href="#hero" aria-label="맨 위로 이동"><i class="fa-solid fa-arrow-up"></i></a>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <p class="copyright">&copy; 2026 DevPortfolio. All rights reserved. Built with pure HTML5, CSS3, and Vanilla JavaScript.</p>
+      </div>
+    </div>
+  </footer>
+
+  <!-- Floating Scroll-To-Top Button -->
+  <button id="scroll-top-btn" class="scroll-top-btn" aria-label="페이지 맨 위로 이동" title="맨 위로 가기">
+    <i class="fa-solid fa-chevron-up"></i>
+  </button>
+
+</body>
+</html>
