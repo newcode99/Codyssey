@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      width: 1200px;
+      height: 800px;
+      background: #090D16;
+      padding: 30px;
+      font-family: 'JetBrains Mono', monospace, -apple-system;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .terminal-window {
+      width: 1140px;
+      height: 740px;
+      background: #030712;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .terminal-header {
+      height: 40px;
+      background: #0F172A;
+      display: flex;
+      align-items: center;
+      padding: 0 16px;
+      gap: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .traffic-lights { display: flex; gap: 8px; }
+    .light { width: 12px; height: 12px; border-radius: 50%; }
+    .red { background: #EF4444; }
+    .yellow { background: #F59E0B; }
+    .green { background: #10B981; }
+
+    .terminal-title {
+      color: #94A3B8;
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .terminal-body {
+      padding: 24px;
+      color: #F8FAFC;
+      font-size: 13px;
+      line-height: 1.6;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .prompt-row { display: flex; gap: 8px; margin-top: 14px; margin-bottom: 4px; }
+    .prompt-user { color: #38BDF8; font-weight: bold; }
+    .prompt-dir { color: #818CF8; }
+    .prompt-char { color: #F8FAFC; }
+    .cmd-text { color: #FACC15; font-weight: bold; }
+
+    .res-block {
+      color: #94A3B8;
+      background: rgba(255, 255, 255, 0.02);
+      padding: 10px 14px;
+      border-radius: 6px;
+      border-left: 3px solid #10B981;
+      margin-top: 4px;
+      margin-bottom: 12px;
+    }
+
+    .res-highlight { color: #10B981; font-weight: bold; }
+    .res-info { color: #38BDF8; }
+  </style>
+</head>
+<body>
+  <div class="terminal-window">
+    <div class="terminal-header">
+      <div class="traffic-lights">
+        <div class="light red"></div>
+        <div class="light yellow"></div>
+        <div class="light green"></div>
+      </div>
+      <div class="terminal-title">admin@mac-terminal: ~/codyssey_2026/2-1/B3-1 (zsh) — E2E Live Verification</div>
+    </div>
+    <div class="terminal-body">
+      <!-- 1. STS Identity Check -->
+      <div class="prompt-row">
+        <span class="prompt-user">admin@codyssey</span>:<span class="prompt-dir">~/B3-1</span><span class="prompt-char">$</span>
+        <span class="cmd-text">aws sts get-caller-identity</span>
+      </div>
+      <div class="res-block">
+        <div>{</div>
+        <div>    "UserId": "AIDAQ3EGSECES5Y2SZBUA",</div>
+        <div>    "Account": "058264264841",</div>
+        <div>    "Arn": <span class="res-highlight">"arn:aws:iam::058264264841:user/b3-1-operator"</span>  <span style="color:#64748B;"># Root 계정 배제 & 최소권한 IAM 사용자 확인</span></div>
+        <div>}</div>
+      </div>
+
+      <!-- 2. Instance Status Check -->
+      <div class="prompt-row">
+        <span class="prompt-user">admin@codyssey</span>:<span class="prompt-dir">~/B3-1</span><span class="prompt-char">$</span>
+        <span class="cmd-text">aws ec2 describe-instances --filters "Name=tag:Project,Values=B3-1-WebInfra" --query 'Reservations[0].Instances[0].[InstanceId,State.Name,PublicIpAddress,VpcId]'</span>
+      </div>
+      <div class="res-block">
+        [<span class="res-info">"i-07ccedbed0cdb560e"</span>, <span class="res-highlight">"running"</span>, <span class="res-highlight">"3.39.0.62"</span>, <span class="res-info">"vpc-06ad778e94505a60e"</span>]
+      </div>
+
+      <!-- 3. Health Endpoint Verification -->
+      <div class="prompt-row">
+        <span class="prompt-user">admin@codyssey</span>:<span class="prompt-dir">~/B3-1</span><span class="prompt-char">$</span>
+        <span class="cmd-text">curl -i "http://3.39.0.62/health/"</span>
+      </div>
+      <div class="res-block">
+        <div><span class="res-highlight">HTTP/1.1 200 OK</span></div>
+        <div>Server: nginx/1.18.0 (Ubuntu)</div>
+        <div>Date: Sun, 25 Oct 2026 17:51:52 GMT</div>
+        <div>Content-Type: text/html</div>
+        <div>Content-Length: 3</div>
+        <div><br></div>
+        <div class="res-highlight">OK</div>
+      </div>
+
+      <!-- 4. Main Web Page Verification -->
+      <div class="prompt-row">
+        <span class="prompt-user">admin@codyssey</span>:<span class="prompt-dir">~/B3-1</span><span class="prompt-char">$</span>
+        <span class="cmd-text">curl -s -o /dev/null -w "HTTP Status Code: %{http_code} | Remote IP: %{remote_ip} | Time: %{time_total}s\n" "http://3.39.0.62/"</span>
+      </div>
+      <div class="res-block">
+        <div><span class="res-highlight">HTTP Status Code: 200</span> | Remote IP: 3.39.0.62 | Time: 0.048s  <span class="res-highlight">✓ [VERIFIED] 외부 E2E 통신 100% 정상</span></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

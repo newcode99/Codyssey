@@ -1,0 +1,16 @@
+# SSH 개인키 및 인증서 파일
+*.pem
+*.key
+*.pub
+
+# 환경 설정 및 자격증명
+.env
+.env.*
+*.credentials
+
+# 임시 파일 및 시스템 캐시
+.DS_Store
+*.swp
+*~
+__pycache__/
+*.log
